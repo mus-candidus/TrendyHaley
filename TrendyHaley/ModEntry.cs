@@ -16,7 +16,6 @@ namespace TrendyHaley {
         public override void Entry(IModHelper helper) {
             this.Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             this.Helper.Events.GameLoop.SaveLoaded   += OnSaveLoaded;
-            this.Helper.Events.GameLoop.Saved        += OnSaved;
             this.Helper.Events.GameLoop.DayStarted   += OnDayStarted;
         }
 
@@ -60,19 +59,18 @@ namespace TrendyHaley {
             // Read persisted hair color or get a new one.
             if (config_.HairColor == Color.Transparent) {
                 config_.HairColor = RandomColor();
+                this.Helper.WriteConfig(config_);
             }
             SetHairColor(config_.HairColor);
             this.Monitor.Log($"Haley chose a new hair color for this season: {config_.HairColor}");
-        }
-
-        private void OnSaved(object sender, SavedEventArgs e) {
-            this.Helper.WriteConfig(config_);
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
             if (Game1.dayOfMonth == 1) {
                 // Get a new hair color for Haley.
                 config_.HairColor = RandomColor();
+                this.Helper.WriteConfig(config_);
+
                 SetHairColor(config_.HairColor);
                 this.Monitor.Log($"Haley chose a new hair color for this season: {config_.HairColor}");
             }
