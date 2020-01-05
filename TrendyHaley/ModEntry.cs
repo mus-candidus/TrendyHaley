@@ -54,27 +54,24 @@ namespace TrendyHaley {
         }
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e) {
+            // Read persisted hair color.
             config_ = this.Helper.ReadConfig<ModConfig>();
-
-            // Read persisted hair color or get a new one.
-            if (config_.HairColor == Color.Transparent) {
-                config_.HairColor = RandomColor();
-                this.Helper.WriteConfig(config_);
-            }
-            SetHairColor(config_.HairColor);
-            this.Monitor.Log($"Haley chose a new hair color for this season: {config_.HairColor}");
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
-            if (Game1.dayOfMonth == 1) {
+            // First day of season or color unset.
+            if (Game1.dayOfMonth == 1 || config_.HairColor == Color.Transparent) {
                 // Get a new hair color for Haley.
                 config_.HairColor = RandomColor();
                 this.Helper.WriteConfig(config_);
 
                 SetHairColor(config_.HairColor);
                 this.Monitor.Log($"Haley chose a new hair color for this season: {config_.HairColor}");
+
+                return;
             }
-            else if (config_.ColorIsFading) {
+
+            if (config_.ColorIsFading) {
                 // The color gets brighter day by day so at season's end the color multiplier is white.
                 Color fadedColor
                     = new Color((byte) (config_.HairColor.R + (255 - config_.HairColor.R) * (float) (Game1.dayOfMonth - 1) / 27.0f),
