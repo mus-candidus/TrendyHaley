@@ -18,8 +18,6 @@ namespace TrendyHaley {
             this.Helper.Events.GameLoop.SaveLoaded   += OnSaveLoaded;
             this.Helper.Events.GameLoop.Saved        += OnSaved;
             this.Helper.Events.GameLoop.DayStarted   += OnDayStarted;
-            // Prevent a NullReferenceException.
-            config_ = this.Helper.ReadConfig<ModConfig>();
         }
 
         /// <summary>Implements <see cref="IAssetEditor.CanEdit"/>.</summary>
