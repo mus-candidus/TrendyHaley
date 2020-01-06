@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 
 
-namespace TrendyHaley {
+namespace TrendyHaley.Framework {
     internal class ModConfig {
         /// <summary>Haley's current hair color.</summary>
         public Color HairColor { get; set; } = Color.Transparent;

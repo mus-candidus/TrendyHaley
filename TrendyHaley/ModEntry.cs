@@ -6,6 +6,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 
+using TrendyHaley.Framework;
+
 
 namespace TrendyHaley {
     public class ModEntry : Mod, IAssetEditor {
