@@ -56,35 +56,41 @@ namespace TrendyHaley {
         }
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e) {
-            // Read persisted hair color.
+            // Read persisted config.
             config_ = this.Helper.ReadConfig<ModConfig>();
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
+            // Create a config entry for this save game if necessary.
+            string saveGameName = $"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}";
+            if (!config_.SaveGame.ContainsKey(saveGameName)) {
+                config_.SaveGame.Add(saveGameName, new ConfigEntry());
+            }
+
             // First day of season or color unset.
-            if (Game1.dayOfMonth == 1 || config_.HairColor == Color.Transparent) {
+            if (Game1.dayOfMonth == 1 || config_.SaveGame[saveGameName].HairColor == Color.Transparent) {
                 // Get a new hair color for Haley.
-                config_.HairColor = RandomColor();
+                config_.SaveGame[saveGameName].HairColor = RandomColor();
+                // Save config.
                 this.Helper.WriteConfig(config_);
 
-                SetHairColor(config_.HairColor);
-                this.Monitor.Log($"Haley chose a new hair color for this season: {config_.HairColor}");
+                SetHairColor(config_.SaveGame[saveGameName].HairColor);
+                this.Monitor.Log($"Haley chose a new hair color for this season: {config_.SaveGame[saveGameName].HairColor}");
 
                 return;
             }
 
-            if (config_.ColorIsFading) {
+            if (config_.SaveGame[saveGameName].ColorIsFading) {
                 // The color gets brighter day by day so at season's end the color multiplier is white.
+                Color baseColor = config_.SaveGame[saveGameName].HairColor;
                 Color fadedColor
-                    = new Color((byte) (config_.HairColor.R + (255 - config_.HairColor.R) * (float) (Game1.dayOfMonth - 1) / 27.0f),
-                                (byte) (config_.HairColor.G + (255 - config_.HairColor.G) * (float) (Game1.dayOfMonth - 1) / 27.0f),
-                                (byte) (config_.HairColor.B + (255 - config_.HairColor.B) * (float) (Game1.dayOfMonth - 1) / 27.0f));
+                    = new Color((byte) (baseColor.R + (255 - baseColor.R) * (float) (Game1.dayOfMonth - 1) / 27.0f),
+                                (byte) (baseColor.G + (255 - baseColor.G) * (float) (Game1.dayOfMonth - 1) / 27.0f),
+                                (byte) (baseColor.B + (255 - baseColor.B) * (float) (Game1.dayOfMonth - 1) / 27.0f));
 
                 SetHairColor(fadedColor);
                 this.Monitor.Log($"Haley's hair color faded: {fadedColor}");
             }
-
-
         }
 
         /// <summary>Sets color and triggers sprite reload.</summary>

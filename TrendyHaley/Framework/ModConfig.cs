@@ -1,12 +1,10 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
 
 
 namespace TrendyHaley.Framework {
     internal class ModConfig {
-        /// <summary>Haley's current hair color.</summary>
-        public Color HairColor { get; set; } = Color.Transparent;
-
-        /// <summary>Indicates whether the color fades away until the end of season.</summary>
-        public bool ColorIsFading { get; set; } = true;
+        /// <summary>User configuration dictionary.</summary>
+        public IDictionary<string, ConfigEntry> SaveGame { get; set; }
+            = new Dictionary<string, ConfigEntry>();
     }
 }
