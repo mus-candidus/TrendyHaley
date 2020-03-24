@@ -23,7 +23,10 @@ namespace TrendyHaley {
 
         /// <summary>Implements <see cref="IAssetEditor.CanEdit"/>.</summary>
         public bool CanEdit<T>(IAssetInfo asset) {
-            return asset.AssetNameEquals("Characters/Haley") || asset.AssetNameEquals("Portraits/Haley");
+            return asset.AssetNameEquals("Characters/Haley") ||
+                   asset.AssetNameEquals("Portraits/Haley") ||
+                   asset.AssetNameEquals("LooseSprites/cowPhotos") ||
+                   asset.AssetNameEquals("LooseSprites/cowPhotosWinter");
         }
 
         /// <summary>Implements <see cref="IAssetEditor.Edit"/>.</summary>
@@ -32,7 +35,7 @@ namespace TrendyHaley {
                 this.Monitor.Log($"Edit asset {asset.AssetName}");
 
                 IAssetDataForImage baseImage = asset.AsImage();
-                // Support for Cold Wether Haley.
+                // Support for Cold Weather Haley.
                 Texture2D overlay = hasColdWeatherHaley_ && Game1.IsWinter
                     ? this.Helper.Content.Load<Texture2D>($"assets/{asset.AssetName}_winter_overlay_hair_gray.png")
                     : this.Helper.Content.Load<Texture2D>($"assets/{asset.AssetName}_overlay_hair_gray.png");
@@ -42,6 +45,14 @@ namespace TrendyHaley {
                     Texture2D sleepingHaley = this.Helper.Content.Load<Texture2D>($"assets/{asset.AssetName}_sleeping.png");
                     baseImage.PatchImage(sleepingHaley, patchMode: PatchMode.Overlay);
                 }
+
+                baseImage.PatchImage(ColorBlend(overlay, actualHairColor_), patchMode: PatchMode.Overlay);
+            }
+            else if (asset.AssetNameEquals("LooseSprites/cowPhotos") || asset.AssetNameEquals("LooseSprites/cowPhotosWinter")) {
+                this.Monitor.Log($"Edit asset {asset.AssetName}");
+
+                IAssetDataForImage baseImage = asset.AsImage();
+                Texture2D overlay = this.Helper.Content.Load<Texture2D>("assets/Characters/Haley_cowPhotos_overlay_hair_gray.png");
 
                 baseImage.PatchImage(ColorBlend(overlay, actualHairColor_), patchMode: PatchMode.Overlay);
             }
