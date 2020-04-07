@@ -93,6 +93,9 @@ namespace TrendyHaley {
                 config_.SaveGame.Add(saveGameName, new ConfigEntry());
             }
 
+            // Check relationship of farmer and Haley.
+            bool isFarmerMarriedToHaley = Game1.player.isMarried() && Game1.player.getSpouse().Name.Equals("Haley");
+
             // First day of season or color unset.
             if (Game1.dayOfMonth == 1 || config_.SaveGame[saveGameName].HairColor == Color.Transparent) {
                 // Get a new hair color for Haley.
@@ -102,6 +105,11 @@ namespace TrendyHaley {
 
                 SetHairColor(config_.SaveGame[saveGameName].HairColor);
                 this.Monitor.Log($"Haley chose a new hair color for this season: {config_.SaveGame[saveGameName].HairColor}");
+
+                if (config_.SaveGame[saveGameName].SpouseLookAlike && isFarmerMarriedToHaley) {
+                    Game1.player.changeHairColor(config_.SaveGame[saveGameName].HairColor);
+                    this.Monitor.Log($"{Game1.player.Name} has the same hair color as Haley");
+                }
 
                 return;
             }
@@ -116,6 +124,11 @@ namespace TrendyHaley {
 
                 SetHairColor(fadedColor);
                 this.Monitor.Log($"Haley's hair color faded: {fadedColor}");
+
+                if (config_.SaveGame[saveGameName].SpouseLookAlike && isFarmerMarriedToHaley) {
+                    Game1.player.changeHairColor(fadedColor);
+                    this.Monitor.Log($"{Game1.player.Name} has the same hair color as Haley");
+                }
             }
         }
 
