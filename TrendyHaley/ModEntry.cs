@@ -158,6 +158,12 @@ namespace TrendyHaley {
                     this.Monitor.Log($"{Game1.player.Name} has the same hair color as Haley");
                 }
             }
+            else {
+                // We have to load the recolored hair overlay every day, otherwise it falls back to vanilla.
+                Color hairColor = config_.SaveGame[saveGameName].HairColor;
+
+                SetHairColor(hairColor);
+            }
         }
 
         /// <summary>Sets color and triggers sprite reload.</summary>
