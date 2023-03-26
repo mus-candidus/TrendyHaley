@@ -24,10 +24,21 @@ namespace TrendyHaley {
             this.Helper.Events.GameLoop.DayStarted   += OnDayStarted;
             this.Helper.Events.GameLoop.Saving       += OnSaving;
             this.Helper.Events.Content.AssetRequested += (sender, e) => {
-                e.Edit(EditAsset);
+                if (CanEdit(e.NameWithoutLocale)) {
+                    e.Edit(EditAsset);
+                }
             };
         }
-        
+
+        private bool CanEdit(IAssetName asset) {
+            return asset.IsEquivalentTo("Characters/Haley") ||
+                   asset.IsEquivalentTo("Portraits/Haley") ||
+                   asset.IsEquivalentTo("Characters/Haley_Beach") ||
+                   asset.IsEquivalentTo("Portraits/Haley_Beach") ||
+                   asset.IsEquivalentTo("LooseSprites/cowPhotos") ||
+                   asset.IsEquivalentTo("LooseSprites/cowPhotosWinter");
+        }
+
         private void EditAsset(IAssetData asset) {
             if (config_ == null) {
                 return;
