@@ -110,7 +110,7 @@ namespace TrendyHaley {
             }
 
             // Check relationship of farmer and Haley.
-            bool isFarmerMarriedToHaley = Game1.player.isMarried() && Game1.player.getSpouse().Name.Equals("Haley");
+            bool isFarmerMarriedToHaley = Game1.player.isMarriedOrRoommates() && Game1.player.getSpouse().Name.Equals("Haley");
 
             // First day of season or color unset.
             if (Game1.dayOfMonth == 1 || config_.SaveGame[saveGameName].HairColor == Color.Transparent) {
@@ -178,7 +178,7 @@ namespace TrendyHaley {
             string saveGameName = $"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}";
 
             // Check relationship of farmer and Haley.
-            bool isFarmerMarriedToHaley = Game1.player.isMarried() && Game1.player.getSpouse().Name.Equals("Haley");
+            bool isFarmerMarriedToHaley = Game1.player.isMarriedOrRoommates() && Game1.player.getSpouse().Name.Equals("Haley");
 
             if (config_.SaveGame[saveGameName].SpouseLookAlike && isFarmerMarriedToHaley) {
                 Color actualSpouseHairColor = Game1.player.hairstyleColor.Value;
