@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using GenericModConfigMenu;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -6,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
-
+using StardewValley.Menus;
 using TrendyHaley.Framework;
 
 
@@ -139,6 +140,14 @@ namespace TrendyHaley {
                                         min: 0,
                                         max: 255);
 
+            configMenu_.AddTextOption(this.ModManifest,
+                                      () => (Context.IsWorldReady ? config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairDyeInterval : ConfigEntry.Interval.OncePerSeason).ToString(),
+                                      (val) => { config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairDyeInterval = Enum.Parse<ConfigEntry.Interval>(val);
+                                                 ComputeAndSetHairColor(); },
+                                      () => "Hair dye interval",
+                                      null,
+                                      Enum.GetNames<ConfigEntry.Interval>());
+
             configMenu_.AddBoolOption(this.ModManifest,
                                       () => Context.IsWorldReady ? config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].ColorIsFading : false,
                                       (val) => { config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].ColorIsFading = val;
@@ -181,7 +190,15 @@ namespace TrendyHaley {
             bool isFarmerMarriedToHaley = Game1.player.isMarriedOrRoommates() && Game1.player.getSpouse().Name.Equals("Haley");
 
             // First day of season or color unset.
-            if (Game1.dayOfMonth == 1 || config_.SaveGame[saveGameName].HairColor == Color.Transparent) {
+            var interval = config_.SaveGame[saveGameName].HairDyeInterval;
+            int[] hairDyeDays = interval switch {
+                ConfigEntry.Interval.OncePerSeason => new int[] { 1 },
+                ConfigEntry.Interval.TwicePerSeason => new int[] { 1, 15 },
+                ConfigEntry.Interval.OncePerWeek => new int[] { 1, 8, 15, 22 },
+                _ => new int[] { 1 }
+            };
+
+            if (hairDyeDays.Contains(Game1.dayOfMonth) || config_.SaveGame[saveGameName].HairColor == Color.Transparent) {
                 // Get a new hair color for Haley.
                 config_.SaveGame[saveGameName].HairColor = RandomColor();
                 // Save config.
@@ -202,16 +219,22 @@ namespace TrendyHaley {
             if (config_.SaveGame[saveGameName].ColorIsFading) {
                 // The color gets brighter day by day so at season's end the color multiplier is white.
                 Color baseColor = config_.SaveGame[saveGameName].HairColor;
+                interval = config_.SaveGame[saveGameName].HairDyeInterval;
 
                 // The following calculations are simple enough to be done
                 // even if we don't need their results, getting the conditions right
                 // would make things unnecessarily complicated.
+                (int modulus, float divider) = interval switch {
+                    ConfigEntry.Interval.OncePerSeason => (28, 27.0f),
+                    ConfigEntry.Interval.TwicePerSeason => (14, 13.0f),
+                    ConfigEntry.Interval.OncePerWeek => (7, 6.0f),
+                    _ => (28, 27.0f)
+                };
 
                 // Needed for color blend and option SpouseLookAlike.
-                Color colorFadedColor
-                    = new Color((byte) (baseColor.R + (255 - baseColor.R) * (float) (Game1.dayOfMonth - 1) / 27.0f),
-                                (byte) (baseColor.G + (255 - baseColor.G) * (float) (Game1.dayOfMonth - 1) / 27.0f),
-                                (byte) (baseColor.B + (255 - baseColor.B) * (float) (Game1.dayOfMonth - 1) / 27.0f));
+                Color colorFadedColor =  new Color((byte) (baseColor.R + (255 - baseColor.R) * (float) ((Game1.dayOfMonth - 1) % modulus) / divider),
+                                                   (byte) (baseColor.G + (255 - baseColor.G) * (float) ((Game1.dayOfMonth - 1) % modulus) / divider),
+                                                   (byte) (baseColor.B + (255 - baseColor.B) * (float) ((Game1.dayOfMonth - 1) % modulus) / divider));
 
                 // Needed for alpha blend: Base color with modified alpha channel.
                 // Note that the renderer expects premultiplied alpha.
@@ -219,7 +242,7 @@ namespace TrendyHaley {
                     = Color.FromNonPremultiplied(baseColor.R,
                                                  baseColor.G,
                                                  baseColor.B,
-                                                 (int) (255.0f * (float) (28 - Game1.dayOfMonth) / 27.0f));
+                                                 (int) (255.0f * (float) (modulus - (Game1.dayOfMonth - 1) % modulus) / divider));
 
                 Color fadedColor = config_.SaveGame[saveGameName].AlphaBlend
                                  ? alphaFadedColor
