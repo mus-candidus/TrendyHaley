@@ -1,4 +1,5 @@
 using System;
+using GenericModConfigMenu;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -17,6 +18,8 @@ namespace TrendyHaley {
         private Color actualHairColor_;
 
         private Color spouseHairColor_;
+
+        private IGenericModConfigMenuApi configMenu_;
 
         public override void Entry(IModHelper helper) {
             this.Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
@@ -95,6 +98,65 @@ namespace TrendyHaley {
             hasColdWeatherHaley_  = this.Helper.ModRegistry.IsLoaded("NanoGamer7.ColdWeatherHaley");
             // Check for RandomFlowerQueen CP mod.
             hasRandomFlowerQueen_ = this.Helper.ModRegistry.IsLoaded("Candidus42.RandomFlowerQueen");
+
+            // GenericModConfigMenu support.
+            var configMenu_ = this.Helper.ModRegistry.GetApi<GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (configMenu_ is null) {
+                return;
+            }
+            
+            configMenu_.Register(this.ModManifest,
+                                 () => config_ = new ModConfig(),
+                                 () => this.Helper.WriteConfig(config_));
+
+            configMenu_.AddNumberOption(this.ModManifest,
+                                        () => Context.IsWorldReady ? config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairColor.R : 0,
+                                        (val) => { config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairColor
+                                                    = new Color(config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairColor, 255) { R = (byte) val };
+                                                   ComputeAndSetHairColor();
+                                                 },
+                                        () => "Hair color red channel",
+                                        min: 0,
+                                        max: 255);
+
+            configMenu_.AddNumberOption(this.ModManifest,
+                                        () => Context.IsWorldReady ? config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairColor.G : 0,
+                                        (val) => { config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairColor
+                                                    = new Color(config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairColor, 255) { G = (byte) val };
+                                                    ComputeAndSetHairColor();
+                                                 },
+                                        () => "Hair color green channel",
+                                        min: 0,
+                                        max: 255);
+
+            configMenu_.AddNumberOption(this.ModManifest,
+                                        () => Context.IsWorldReady ? config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairColor.B : 0,
+                                        (val) => { config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairColor
+                                                    = new Color(config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].HairColor, 255) { B = (byte) val };
+                                                    ComputeAndSetHairColor();
+                                                 },
+                                        () => "Hair color blue channel",
+                                        min: 0,
+                                        max: 255);
+
+            configMenu_.AddBoolOption(this.ModManifest,
+                                      () => Context.IsWorldReady ? config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].ColorIsFading : false,
+                                      (val) => { config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].ColorIsFading = val;
+                                                 ComputeAndSetHairColor();
+                                               },
+                                      () => "Color is fading");
+
+            configMenu_.AddBoolOption(this.ModManifest,
+                                      () => Context.IsWorldReady ? config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].AlphaBlend : false,
+                                      (val) => { config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].AlphaBlend = val;
+                                                 ComputeAndSetHairColor(); },
+                                      () => "Alpha blend");
+
+            configMenu_.AddBoolOption(this.ModManifest,
+                                      () => Context.IsWorldReady ? config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].SpouseLookAlike : false,
+                                      (val) => { config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"].SpouseLookAlike = val;
+                                                 ComputeAndSetHairColor(); },
+                                      () => "Spouse look alike");
         }
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e) {
@@ -109,6 +171,12 @@ namespace TrendyHaley {
                 config_.SaveGame.Add(saveGameName, new ConfigEntry());
             }
 
+            ComputeAndSetHairColor();
+        }
+
+        private void ComputeAndSetHairColor() {
+            string saveGameName = $"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}";
+
             // Check relationship of farmer and Haley.
             bool isFarmerMarriedToHaley = Game1.player.isMarriedOrRoommates() && Game1.player.getSpouse().Name.Equals("Haley");
 
@@ -122,13 +190,13 @@ namespace TrendyHaley {
                 SetHairColor(config_.SaveGame[saveGameName].HairColor);
                 this.Monitor.Log($"Haley chose a new hair color for this season: {config_.SaveGame[saveGameName].HairColor}");
 
-                if (config_.SaveGame[saveGameName].SpouseLookAlike && isFarmerMarriedToHaley) {
-                    spouseHairColor_ = config_.SaveGame[saveGameName].HairColor;
-                    Game1.player.changeHairColor(spouseHairColor_);
-                    this.Monitor.Log($"{Game1.player.Name} has the same hair color as Haley");
-                }
-
                 return;
+            }
+
+            if (config_.SaveGame[saveGameName].SpouseLookAlike && isFarmerMarriedToHaley) {
+                spouseHairColor_ = config_.SaveGame[saveGameName].HairColor;
+                Game1.player.changeHairColor(spouseHairColor_);
+                this.Monitor.Log($"{Game1.player.Name} has the same hair color as Haley");
             }
 
             if (config_.SaveGame[saveGameName].ColorIsFading) {
