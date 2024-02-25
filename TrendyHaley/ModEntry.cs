@@ -207,13 +207,13 @@ namespace TrendyHaley {
                 SetHairColor(config_.SaveGame[saveGameName].HairColor);
                 this.Monitor.Log($"Haley chose a new hair color for this season: {config_.SaveGame[saveGameName].HairColor}");
 
-                return;
-            }
+                if (config_.SaveGame[saveGameName].SpouseLookAlike && isFarmerMarriedToHaley) {
+                    spouseHairColor_ = config_.SaveGame[saveGameName].HairColor;
+                    Game1.player.changeHairColor(spouseHairColor_);
+                    this.Monitor.Log($"{Game1.player.Name} has the same hair color as Haley");
+                }
 
-            if (config_.SaveGame[saveGameName].SpouseLookAlike && isFarmerMarriedToHaley) {
-                spouseHairColor_ = config_.SaveGame[saveGameName].HairColor;
-                Game1.player.changeHairColor(spouseHairColor_);
-                this.Monitor.Log($"{Game1.player.Name} has the same hair color as Haley");
+                return;
             }
 
             if (config_.SaveGame[saveGameName].ColorIsFading) {
