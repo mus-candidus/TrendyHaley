@@ -13,14 +13,11 @@ using TrendyHaley.Framework;
 
 namespace TrendyHaley {
     public class ModEntry : Mod {
-        private bool hasColdWeatherHaley_;
         private bool hasRandomFlowerQueen_;
         private ModConfig config_;
         private Color actualHairColor_;
 
         private Color spouseHairColor_;
-
-        private IGenericModConfigMenuApi configMenu_;
 
         public override void Entry(IModHelper helper) {
             this.Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
@@ -53,17 +50,8 @@ namespace TrendyHaley {
 
                 IAssetDataForImage baseImage = asset.AsImage();
                 Texture2D overlay;
-                // Support for Cold Weather Haley.
-                if (hasColdWeatherHaley_ && Game1.IsWinter) {
-                    overlay = this.Helper.ModContent.Load<Texture2D>($"assets/{asset.NameWithoutLocale}_winter_overlay_hair_gray.png");
-                    // Workaround for the missing sleeping sprite of Cold Weather Haley.
-                    if (asset.NameWithoutLocale.IsEquivalentTo("Characters/Haley")) {
-                        Texture2D sleepingHaley = this.Helper.ModContent.Load<Texture2D>($"assets/{asset.NameWithoutLocale}_sleeping.png");
-                        baseImage.PatchImage(sleepingHaley, patchMode: PatchMode.Overlay);
-                    }
-                }
                 // Support for RandomFlowerQueen.
-                else if (hasRandomFlowerQueen_ && asset.NameWithoutLocale.IsEquivalentTo("Characters/Haley")) {
+                if (hasRandomFlowerQueen_ && asset.NameWithoutLocale.IsEquivalentTo("Characters/Haley")) {
                     // We must replace the flowerqueen part of the base image since it contains unwanted pixels.
                     Texture2D haleyNoFlowercrown = this.Helper.ModContent.Load<Texture2D>($"assets/{asset.NameWithoutLocale}_no_flowercrown.png");
                     baseImage.PatchImage(haleyNoFlowercrown, targetArea: new Rectangle(0, 320, 64, 64), patchMode: PatchMode.Replace);
@@ -95,8 +83,6 @@ namespace TrendyHaley {
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e) {
-            // Check for ColdWeatherHaley CP mod.
-            hasColdWeatherHaley_  = this.Helper.ModRegistry.IsLoaded("NanoGamer7.ColdWeatherHaley");
             // Check for RandomFlowerQueen CP mod.
             hasRandomFlowerQueen_ = this.Helper.ModRegistry.IsLoaded("Candidus42.RandomFlowerQueen");
 
