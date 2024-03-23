@@ -36,6 +36,8 @@ namespace TrendyHaley {
                    asset.IsEquivalentTo("Portraits/Haley") ||
                    asset.IsEquivalentTo("Characters/Haley_Beach") ||
                    asset.IsEquivalentTo("Portraits/Haley_Beach") ||
+                   asset.IsEquivalentTo("Characters/Haley_Winter") ||
+                   asset.IsEquivalentTo("Portraits/Haley_Winter") ||
                    asset.IsEquivalentTo("LooseSprites/cowPhotos") ||
                    asset.IsEquivalentTo("LooseSprites/cowPhotosWinter");
         }
@@ -64,7 +66,10 @@ namespace TrendyHaley {
 
                 baseImage.PatchImage(ColorBlend(overlay, actualHairColor_), patchMode: PatchMode.Overlay);
             }
-            else if (asset.NameWithoutLocale.IsEquivalentTo("Characters/Haley_Beach") || asset.NameWithoutLocale.IsEquivalentTo("Portraits/Haley_Beach")) {
+            else if (asset.NameWithoutLocale.IsEquivalentTo("Characters/Haley_Beach") ||
+                     asset.NameWithoutLocale.IsEquivalentTo("Portraits/Haley_Beach") ||
+                     asset.NameWithoutLocale.IsEquivalentTo("Characters/Haley_Winter") ||
+                     asset.NameWithoutLocale.IsEquivalentTo("Portraits/Haley_Winter")) {
                 this.Monitor.Log($"Edit asset {asset.NameWithoutLocale}");
 
                 IAssetDataForImage baseImage = asset.AsImage();
@@ -279,6 +284,12 @@ namespace TrendyHaley {
 
             this.Helper.GameContent.InvalidateCache("Characters/Haley");
             this.Helper.GameContent.InvalidateCache("Portraits/Haley");
+            this.Helper.GameContent.InvalidateCache("Characters/Haley_Beach");
+            this.Helper.GameContent.InvalidateCache("Portraits/Haley_Beach");
+            this.Helper.GameContent.InvalidateCache("Characters/Haley_Winter");
+            this.Helper.GameContent.InvalidateCache("Portraits/Haley_Winter");
+            this.Helper.GameContent.InvalidateCache("LooseSprites/cowPhotos");
+            this.Helper.GameContent.InvalidateCache("LooseSprites/cowPhotosWinter");
         }
 
         /// <summary>Random color (always full opaque).</summary>
