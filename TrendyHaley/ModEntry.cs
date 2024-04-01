@@ -90,6 +90,9 @@ namespace TrendyHaley {
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e) {
             // Check for RandomFlowerQueen CP mod.
             hasRandomFlowerQueen_ = this.Helper.ModRegistry.IsLoaded("Candidus42.RandomFlowerQueen");
+            
+            // Read persisted config.
+            config_ = this.Helper.ReadConfig<ModConfig>();
 
             // GenericModConfigMenu support.
             var configMenu = this.Helper.ModRegistry.GetApi<GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
@@ -103,11 +106,21 @@ namespace TrendyHaley {
                     return config_.SaveGame[$"{Game1.GetSaveGameName()}_{Game1.uniqueIDForThisGame}"];
                 }
 
-                this.Monitor.Log("This mod doesn't support using GMCM from title screen, please load a save first.", LogLevel.Warn);
+                // First call happens before anything is ready.
+                if (config_ is null) {
+                    return new ConfigEntry();
+                }
+                
+                // Create default entry if necessary.
+                if (!config_.SaveGame.ContainsKey("Default")) {
+                    config_.SaveGame["Default"] = new ConfigEntry();
+                    // Set alpha channel to opaque.
+                    config_.SaveGame["Default"].HairColor = RandomColor();
+                }
 
-                return new ConfigEntry();
-            };
-            
+                return config_.SaveGame["Default"];
+            }
+
             configMenu.Register(this.ModManifest,
                                  () => config_ = new ModConfig(),
                                  () => this.Helper.WriteConfig(config_));
@@ -187,11 +200,20 @@ namespace TrendyHaley {
             if (!config_.SaveGame.ContainsKey(saveGameName)) {
                 config_.SaveGame.Add(saveGameName, new ConfigEntry());
             }
+            
+            // Copy and remove default entry if present.
+            if (config_.SaveGame.ContainsKey("Default")) {
+                config_.SaveGame[saveGameName] = config_.SaveGame["Default"];
+                config_.SaveGame.Remove("Default");
+            }
 
             ComputeAndSetHairColor();
         }
 
         private void ComputeAndSetHairColor() {
+            // Save config.
+            this.Helper.WriteConfig(config_);
+            
             if (!Context.IsWorldReady) {
                 return;
             }
@@ -272,8 +294,13 @@ namespace TrendyHaley {
             else {
                 // We have to load the recolored hair overlay every day, otherwise it falls back to vanilla.
                 Color hairColor = config_.SaveGame[saveGameName].HairColor;
-
                 SetHairColor(hairColor);
+                
+                if (config_.SaveGame[saveGameName].SpouseLookAlike && isFarmerMarriedToHaley) {
+                    spouseHairColor_ = hairColor;
+                    Game1.player.changeHairColor(spouseHairColor_);
+                    this.Monitor.Log($"{Game1.player.Name} has the same hair color as Haley");
+                }
             }
         }
 
